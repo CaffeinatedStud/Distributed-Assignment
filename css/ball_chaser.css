@@ -1,0 +1,47 @@
+* {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	background-color: #a200ff;
+}
+
+#imgError404LogoTop {
+	height: 10%;
+	position: absolute;
+	top: 0%;
+	left: 45%;
+}
+
+#mycanvas {
+	z-index: 1;
+	background: #eee;
+	margin:auto ;
+	position: absolute;
+	top: 12%;
+	left: 14%;
+}
+
+#lblScoreLabel {
+	left: 16%;
+}
+
+#lblScoreMarking {
+	left: 22.5%;	
+}
+
+#lblTimerLabel {
+	left: 40%;
+}
+
+#lblTimerMarking {
+	left: 56%;
+}
+
+.writing {
+	z-index: 2;
+	font-size: 25px;
+	position: absolute;
+	top: 12.5%;
+}
