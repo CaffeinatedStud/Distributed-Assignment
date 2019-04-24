@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Breaking Tiles</title>
+    <style>
+    	* { padding: 100; margin: 100; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+
+:root {
+	--primary-c: #2196F3;
+	--secondary-c: #B2D7F5;
+	
+	--white: #FDFBFB;
+	
+	--text: #082943;	
+	--bg: var(--primary-c);
+}
+
+
+/* Basic Config
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+html, body {
+	height: 100%;
+	padding: 0;
+	margin: 0;
+}
+
+body {
+  background-color: var(--bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+	font-family: 'Raleway', sans-serif;
+	color: var(--text);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+ul {
+	list-style-type: none;
+	padding-left: 50px;
+	margin: 0;
+}
+
+li {
+	display: block;
+	position: relative;
+	padding: 20px 0px;
+}
+
+h2 {
+	margin: 10px 0;
+	font-weight: 900;
+}
+
+
+/* Card
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.card {
+	display: flex;
+	flex-direction: column;	
+	background: var(--white);
+	width: 300px;
+	padding: 20px 25px;
+	border-radius: 20px;
+	box-shadow: 0 19px 38px rgba(0, 0, 0, 0.13);
+}
+
+
+/* Radio Button
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+input[type=radio] {
+	position: absolute;
+	visibility: hidden;
+}
+
+label { 
+	cursor: pointer; 
+	font-weight: 400;
+}
+
+.check {
+	width: 30px; height: 30px;
+	position: absolute;
+	border-radius: 50%;
+	transition: transform .6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* Reset */
+input#one ~ .check { 
+	transform: translate(-50px, -25px); 
+	background: var(--secondary-c); 
+}
+input#two ~ .check { 
+	transform: translate(-50px, -83px); 
+	background: var(--primary-c);
+	box-shadow: 0 6px 12px rgba(33, 150, 243, 0.35);
+}
+
+
+
+/* Radio Input #1 */
+input#one:checked ~ .check { transform: translate(-50px, 33px); }
+
+/* Radio Input #2  */
+input#two:checked ~ .check { transform: translate(-50px, -25px); }
+
+
+
+    </style>
+    <link rel="stylesheet" href="//brick.a.ssl.fastly.net/Roboto:400"/>
+</head>
+<body>
+<div style="padding-left: 5%; padding-right: 2%">
+
+<canvas id="myCanvas" width="1000" height="600"></canvas>
+</div>
+
+	<div class="card">
+	<h3 id="di">Difficulty :</h3>
+	
+	<ul>
+		<li>
+			<input type="radio" name="choice" id="one" value="easy" checked />
+			<label for="one">Normal</label>
+			
+			<div class="check"></div>
+		</li>
+		
+		<li>
+			<input type="radio" name="choice"  value="hard" id="two" />
+			<label for="two">Hard</label>
+			
+			<div class="check"></div>
+		</li>
+
+		
+	</ul>
+</div>
+
+<script>
+var level;
+function difficulty(){
+    var radios = document.getElementsByName('choice');
+    
+    for(var i = 0; i < radios.length; i++){
+        if (radios[i].checked) {
+        // do whatever you want with the checked radio
+        level=radios[i].value;
+
+        
+    	}
+    }
+}
+difficulty();
+//alert(level);
+if(level=='easy')
+{
+	var labelDiff = document.getElementById('di');
+	labelDiff.innerHTML="Difficulty : Normal";
+	var dx = 3;
+	var dy = -3;
+	var paddleHeight = 20;
+	var paddleWidth = 100;
+	var brickRowCount = 11;
+	var brickColumnCount = 3;
+	var brickWidth = 75;
+	var brickHeight = 75;
+}
+else if(level=='hard')
+{
+	
+	var labelDiff = document.getElementById('di');
+	labelDiff.innerHTML="Difficulty : Hard";
+	var dx = 6;
+	var dy = -6;
+	var paddleHeight = 20;
+	var paddleWidth = 75;
+	var brickRowCount = 11;
+	var brickColumnCount = 5;
+	var brickWidth = 75;
+	var brickHeight = 50;
+}
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+var ballRadius = 15;
+var x = canvas.width/2;
+var y = canvas.height-30;
+
+
+var paddleX = (canvas.width-paddleWidth)/2;
+var rightPressed = false;
+var leftPressed = false;
+
+
+var brickPadding = 10;
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+var score = 0;
+var lives = 3;
+
+var bricks = [];
+for(var c=0; c<brickColumnCount; c++) {
+  bricks[c] = [];
+  for(var r=0; r<brickRowCount; r++) {
+    bricks[c][r] = { x: 0, y: 0, status: 1 };
+  }
+}
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = true;
+    }
+    else if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = true;
+    }
+}
+
+function keyUpHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = false;
+    }
+    else if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = false;
+    }
+}
+
+
+function collisionDetection() {
+  for(var c=0; c<brickColumnCount; c++) {
+    for(var r=0; r<brickRowCount; r++) {
+      var b = bricks[c][r];
+      if(b.status == 1) {
+        if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+          dy = -dy;
+          b.status = 0;
+          score++;
+          if(score == brickRowCount*brickColumnCount) {
+            alert("YOU WIN, CONGRATS!");
+            difficulty();
+            document.location.reload();
+          }
+        }
+      }
+    }
+  }
+}
+
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+  ctx.fillStyle = "#000000";
+  ctx.fill();
+  ctx.closePath();
+}
+function drawPaddle() {
+  ctx.beginPath();
+  ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+  ctx.fillStyle = "#00000";
+  ctx.fill();
+  ctx.closePath();
+}
+function drawBricks() {
+  for(var c=0; c<brickColumnCount; c++) {
+    for(var r=0; r<brickRowCount; r++) {
+      if(bricks[c][r].status == 1) {
+        var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+        var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+        bricks[c][r].x = brickX;
+        bricks[c][r].y = brickY;
+        ctx.beginPath();
+        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+        ctx.fillStyle = "#990099";
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+  }
+}
+function drawScore() {
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#990099";
+  ctx.fillText("Score: "+score, 8, 20);
+}
+function drawLives() {
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#990099";
+  ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBricks();
+  drawBall();
+  drawPaddle();
+  drawScore();
+  drawLives();
+  collisionDetection();
+
+  if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+    dx = -dx;
+  }
+  if(y + dy < ballRadius) {
+    dy = -dy;
+  }
+  else if(y + dy > canvas.height-ballRadius) {
+    if(x > paddleX && x < paddleX + paddleWidth) {
+      dy = -dy;
+    }
+    else {
+      lives--;
+      if(!lives) {
+        alert("GAME OVER");
+        difficulty();
+        document.location.reload();
+
+      }
+      else {
+        x = canvas.width/2;
+        y = canvas.height-30;
+        
+        paddleX = (canvas.width-paddleWidth)/2;
+      }
+    }
+  }
+
+  if(rightPressed && paddleX < canvas.width-paddleWidth) {
+    paddleX += 7;
+  }
+  else if(leftPressed && paddleX > 0) {
+    paddleX -= 7;
+  }
+
+  x += dx;
+  y += dy;
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
+</body>
+</html>

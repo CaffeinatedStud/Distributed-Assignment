@@ -50,7 +50,7 @@ function loadCanvas() {
 		ctx.closePath();
 	}
 
-	function detectBallCollision() { //TBR
+	function detectBallCollision() {
 		if(xPlayBall > xFixedBall - 20 && xPlayBall < xFixedBall + 20 && yPlayBall > yFixedBall - 20 && yPlayBall < yFixedBall + 20) {
 			xFixedBall = Math.floor((Math.random() * 900) + 50);
 			yFixedBall = Math.floor((Math.random() * 400) + 50);
@@ -59,8 +59,9 @@ function loadCanvas() {
 		}
 	}
 
-	function detectWallCollision() {
+	function detectWallCollision() { //TBR
 		if(xPlayBall == canvas.width - 50 || xPlayBall == 50 || yPlayBall == 50 || yPlayBall == canvas.height - 50) {
+			alert(yPlayBall);
 			alert("You lose");
 			document.location.reload();
 		}
